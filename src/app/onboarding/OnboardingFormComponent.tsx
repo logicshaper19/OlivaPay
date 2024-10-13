@@ -1,7 +1,5 @@
 'use client';
-
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -10,24 +8,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 import { Progress } from "@/components/ui/progress"
 import { Leaf } from "lucide-react"
-import { supabase } from '@/lib/supabaseClient'
 
 const steps = [
-  { title: "Secure Your Account", description: "Verify your phone number and set a password" },
+  { title: "Verify Your Phone", description: "Provide your phone number for account verification" },
   { title: "Company Details", description: "Provide information about your company" },
   { title: "Employee Setup", description: "Set up your employee onboarding preferences" },
 ]
 
-export default function OnboardingFormComponent() {
-  const router = useRouter()
+export default function OnboardingFlow() {
   const [currentStep, setCurrentStep] = useState(0)
   const [formData, setFormData] = useState({
-    email: '',
-    firstName: '',
-    lastName: '',
     phoneNumber: '',
-    password: '',
-    confirmPassword: '',
     companyName: '',
     companyType: '',
     website: '',
@@ -38,16 +29,16 @@ export default function OnboardingFormComponent() {
     needAssistance: false,
   })
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e) => {
     const { name, value } = e.target
     setFormData(prevData => ({ ...prevData, [name]: value }))
   }
 
-  const handleSelectChange = (name: string, value: string) => {
+  const handleSelectChange = (name, value) => {
     setFormData(prevData => ({ ...prevData, [name]: value }))
   }
 
-  const handleCheckboxChange = (checked: boolean) => {
+  const handleCheckboxChange = (checked) => {
     setFormData(prevData => ({ ...prevData, needAssistance: checked }))
   }
 
@@ -75,28 +66,6 @@ export default function OnboardingFormComponent() {
                 onChange={handleInputChange}
               />
               <p className="text-sm text-gray-500">Your phone number will be used to verify certain actions, ensuring secure access and transactions.</p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Create Password</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                placeholder="Enter your password"
-                value={formData.password}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <Input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                placeholder="Confirm your password"
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-              />
             </div>
           </div>
         )
@@ -165,11 +134,10 @@ export default function OnboardingFormComponent() {
                     <SelectValue placeholder="Select county" />
                   </SelectTrigger>
                   <SelectContent>
-                    {/* Add all 47 Kenyan counties here */}
                     <SelectItem value="nairobi">Nairobi</SelectItem>
                     <SelectItem value="mombasa">Mombasa</SelectItem>
                     <SelectItem value="kisumu">Kisumu</SelectItem>
-                    {/* ... */}
+                    {/* Add all 47 Kenyan counties here */}
                   </SelectContent>
                 </Select>
               </div>
@@ -227,68 +195,6 @@ export default function OnboardingFormComponent() {
     }
   }
 
-  const handleComplete = async () => {
-    console.log('handleComplete function called');
-    try {
-      // Sign up the user
-      console.log('Attempting to sign up user with email:', formData.email);
-      const { data: authData, error: signUpError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-      })
-
-      if (signUpError) {
-        console.error('Error during sign up:', signUpError);
-        throw signUpError;
-      }
-
-      console.log('User signed up successfully:', authData);
-
-      // Store additional user data in the company_profiles table
-      console.log('Attempting to insert company profile data');
-      const { error: profileError } = await supabase
-        .from('company_profiles')
-        .insert([
-          {
-            user_id: authData.user?.id,
-            email: formData.email,
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            phone_number: formData.phoneNumber,
-            company_name: formData.companyName,
-            company_type: formData.companyType,
-            website: formData.website,
-            country: formData.country,
-            county: formData.county,
-            company_size: formData.companySize,
-            initial_employee_count: parseInt(formData.employeeCount),
-            needs_onboarding_assistance: formData.needAssistance,
-            onboarding_completed: true,
-            onboarding_step: steps.length
-          }
-        ])
-
-      if (profileError) {
-        console.error('Error inserting company profile:', profileError);
-        throw profileError;
-      }
-
-      console.log('Company profile inserted successfully');
-
-      // Clear localStorage
-      localStorage.removeItem('userData');
-      console.log('localStorage cleared');
-
-      // Redirect to dashboard
-      console.log('Attempting to redirect to dashboard');
-      router.push('/dashboard');
-    } catch (error) {
-      console.error('Error during onboarding:', error);
-      // Handle error (show error message to user)
-      // You might want to add some user-friendly error handling here
-    }
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-2xl">
@@ -313,7 +219,7 @@ export default function OnboardingFormComponent() {
               Previous
             </Button>
             <Button
-              onClick={currentStep === steps.length - 1 ? handleComplete : handleNext}
+              onClick={currentStep === steps.length - 1 ? () => console.log('Onboarding complete!', formData) : handleNext}
             >
               {currentStep === steps.length - 1 ? 'Complete' : 'Next'}
             </Button>
