@@ -1,9 +1,12 @@
 'use client';
 
+import { useState } from 'react';
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Leaf, Home, Users, CreditCard, Heart, FileText, PlusCircle, DollarSign, Clock, BarChart2 } from "lucide-react"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { AddEmployeeForm } from "@/components/dashboard/AddEmployeeForm"
 
 const payrollData = [
   { month: 'Jan', amount: 50000 },
@@ -22,6 +25,13 @@ const recentActivities = [
 ]
 
 export default function Dashboard() {
+  const [isAddEmployeeOpen, setIsAddEmployeeOpen] = useState(false);
+
+  const handleAddEmployeeComplete = () => {
+    setIsAddEmployeeOpen(false);
+    // You might want to refresh the employee list or show a success message here
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm">
@@ -59,9 +69,19 @@ export default function Dashboard() {
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold text-gray-900">Welcome back, John!</h1>
             <div className="flex space-x-2">
-              <Button size="sm" variant="outline">
-                <PlusCircle className="mr-2 h-4 w-4" /> Add Employee
-              </Button>
+              <Dialog open={isAddEmployeeOpen} onOpenChange={setIsAddEmployeeOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm" variant="outline">
+                    <PlusCircle className="mr-2 h-4 w-4" /> Add Employee
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Add New Employee</DialogTitle>
+                  </DialogHeader>
+                  <AddEmployeeForm onComplete={handleAddEmployeeComplete} />
+                </DialogContent>
+              </Dialog>
               <Button size="sm" variant="outline">
                 <DollarSign className="mr-2 h-4 w-4" /> Process Payroll
               </Button>

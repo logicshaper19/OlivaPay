@@ -1,16 +1,27 @@
-import { NextResponse } from 'next/server'
+// src/app/signup/route.ts
+import { db } from '@/lib/db';
+import { employers } from '@/lib/schema';
+import bcrypt from 'bcrypt';
+import { NextResponse } from 'next/server';
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
-    const { firstName, lastName, email } = await request.json()
+    const { firstName, lastName, email, password } = await req.json();
     
-    console.log('Received signup data:', { firstName, lastName, email })
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Your signup logic here
-    // For now, let's just return a success response
-    return NextResponse.json({ message: 'Signup successful', user: { firstName, lastName, email } })
+    // Insert the new employer
+    const [newEmployer] = await db.insert(employers).values({
+      first_name: firstName,
+      last_name: lastName,
+      email,
+      password: hashedPassword,
+    }).returning();
+
+    return NextResponse.json({ message: 'Signup successful', employer: newEmployer }, { status: 201 });
   } catch (error) {
-    console.error('Signup error:', error)
-    return NextResponse.json({ error: 'Signup failed' }, { status: 400 })
+    console.error('Signup error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

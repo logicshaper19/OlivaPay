@@ -1,5 +1,6 @@
 'use client';
-import { useState } from 'react'
+import { useState, ChangeEvent } from 'react'
+import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -15,9 +16,21 @@ const steps = [
   { title: "Employee Setup", description: "Set up your employee onboarding preferences" },
 ]
 
+interface FormData {
+  phoneNumber: string;
+  companyName: string;
+  companyType: string;
+  website: string;
+  country: string;
+  county: string;
+  companySize: string;
+  employeeCount: string;
+  needAssistance: boolean;
+}
+
 export default function OnboardingFlow() {
   const [currentStep, setCurrentStep] = useState(0)
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     phoneNumber: '',
     companyName: '',
     companyType: '',
@@ -28,17 +41,18 @@ export default function OnboardingFlow() {
     employeeCount: '',
     needAssistance: false,
   })
+  const router = useRouter();
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData(prevData => ({ ...prevData, [name]: value }))
   }
 
-  const handleSelectChange = (name, value) => {
+  const handleSelectChange = (name: keyof FormData, value: string) => {
     setFormData(prevData => ({ ...prevData, [name]: value }))
   }
 
-  const handleCheckboxChange = (checked) => {
+  const handleCheckboxChange = (checked: boolean) => {
     setFormData(prevData => ({ ...prevData, needAssistance: checked }))
   }
 
@@ -49,6 +63,31 @@ export default function OnboardingFlow() {
   const handlePrevious = () => {
     setCurrentStep(prevStep => prevStep - 1)
   }
+
+  const handleSubmit = async () => {
+    try {
+      const userId = localStorage.getItem('userId');
+      if (!userId) {
+        console.error('User ID not found');
+        return;
+      }
+
+      const response = await fetch('/api/onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...formData, userId })
+      });
+
+      if (response.ok) {
+        console.log('Onboarding completed successfully');
+        router.push('/dashboard'); // Redirect to dashboard after successful onboarding
+      } else {
+        console.error('Onboarding failed');
+      }
+    } catch (error) {
+      console.error('Onboarding error:', error);
+    }
+  };
 
   const renderStep = () => {
     switch (currentStep) {
@@ -219,7 +258,7 @@ export default function OnboardingFlow() {
               Previous
             </Button>
             <Button
-              onClick={currentStep === steps.length - 1 ? () => console.log('Onboarding complete!', formData) : handleNext}
+              onClick={currentStep === steps.length - 1 ? handleSubmit : handleNext}
             >
               {currentStep === steps.length - 1 ? 'Complete' : 'Next'}
             </Button>
