@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button"
@@ -9,7 +10,11 @@ import { Label } from "@/components/ui/label"
 import { Leaf } from "lucide-react"
 import Link from "next/link"
 
-export default function SignUpPage() {
+interface SignUpFormComponentProps {
+  onSubmit: (formData: FormData) => Promise<void>;
+}
+
+const SignUpFormComponent: React.FC<SignUpFormComponentProps> = ({ onSubmit }) => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -101,3 +106,5 @@ export default function SignUpPage() {
     </div>
   )
 }
+
+export default SignUpFormComponent;

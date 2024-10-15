@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
@@ -10,7 +11,11 @@ import { Leaf } from "lucide-react"
 import Link from "next/link"
 import { supabase } from '@/lib/supabaseClient'
 
-export default function VerifyEmailComponent() {
+interface VerifyEmailComponentProps {
+  onVerify: (token: string) => Promise<void>;
+}
+
+const VerifyEmailComponent: React.FC<VerifyEmailComponentProps> = ({ onVerify }) => {
   const [verificationCode, setVerificationCode] = useState('')
   const [email, setEmail] = useState('')
   const router = useRouter()
@@ -110,3 +115,5 @@ export default function VerifyEmailComponent() {
     </div>
   )
 }
+
+export default VerifyEmailComponent;

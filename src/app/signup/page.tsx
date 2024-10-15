@@ -1,8 +1,8 @@
-'use client';  // Add this at the top of the file
+'use client';
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import SignUpFormComponent from '../../components/SignUpFormComponent';
+import SignUpFormComponent from './SignUpFormComponent';
 
 export default function SignupPage() {
   const [error, setError] = useState('');
@@ -10,7 +10,6 @@ export default function SignupPage() {
 
   const handleSignup = async (formData: FormData) => {
     try {
-      // Implement your signup logic here
       const response = await fetch('/api/signup', {
         method: 'POST',
         body: formData,
