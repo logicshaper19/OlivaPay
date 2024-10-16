@@ -4,15 +4,15 @@ import { employers } from '@/lib/schema';
 
 export async function POST(req: Request) {
   try {
-    const { firstName, lastName, email, password } = await req.json();
-    console.log('Received signup data:', { firstName, lastName, email });
+    const body: { email: string; password: string } = await req.json();
+    console.log('Received signup data:', body);
 
     const newEmployer = await db.insert(employers).values({
       id: undefined as any, // This tells Drizzle to use the database's auto-increment
-      firstName,
-      lastName,
-      email,
-      password,
+      firstName: body.firstName,
+      lastName: body.lastName,
+      email: body.email,
+      password: body.password,
       phoneNumber: '', // Add a default empty string for phoneNumber
     }).returning({ id: employers.id });
 

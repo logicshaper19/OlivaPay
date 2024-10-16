@@ -9,7 +9,7 @@ export default function SignupPage() {
   const [error, setError] = useState('');
   const router = useRouter();
 
-  const handleSignup = async (formData: any) => {
+  const handleSignup = async (formData: { email: string; password: string }) => {
     try {
       const response = await fetch('/api/auth/signup', {
         method: 'POST',

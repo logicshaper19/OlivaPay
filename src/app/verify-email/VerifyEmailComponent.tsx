@@ -8,7 +8,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Leaf } from "lucide-react"
-import Link from "next/link"
 import { supabase } from '@/lib/supabaseClient'
 
 interface VerifyEmailComponentProps {
@@ -67,7 +66,7 @@ const VerifyEmailComponent: React.FC<VerifyEmailComponentProps> = ({ onVerify })
           <CardHeader>
             <CardTitle className="text-2xl text-center">Verify your email</CardTitle>
             <CardDescription className="text-center">
-              We've sent a verification code to your email. Please enter it below.
+              We&apos;ve sent a verification code to your email. Please enter it below.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -100,7 +99,7 @@ const VerifyEmailComponent: React.FC<VerifyEmailComponentProps> = ({ onVerify })
           </CardContent>
           <CardFooter className="flex flex-col">
             <p className="mt-4 text-sm text-center text-gray-600">
-              Didn't receive the code?{" "}
+              Didn&apos;t receive the code?{" "}
               <Button 
                 variant="link" 
                 onClick={handleResendCode} 
