@@ -1,5 +1,5 @@
 'use client';
-import { useState, ChangeEvent } from 'react'
+import { useState, useEffect, ChangeEvent } from 'react'
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 import { Progress } from "@/components/ui/progress"
 import { Leaf } from "lucide-react"
+import { toast } from 'react-hot-toast'
 
 const steps = [
   { title: "Verify Your Phone", description: "Provide your phone number for account verification" },
@@ -16,32 +17,92 @@ const steps = [
   { title: "Employee Setup", description: "Set up your employee onboarding preferences" },
 ]
 
+interface Country {
+  id: number;
+  name: string;
+  code: string;
+}
+
+interface County {
+  id: number;
+  countryId: number;
+  name: string;
+}
+
 interface FormData {
   phoneNumber: string;
   companyName: string;
   companyType: string;
   website: string;
-  country: string;
-  county: string;
+  countryId: number | null;
+  countyId: number | null;
   companySize: string;
   employeeCount: string;
   needAssistance: boolean;
 }
 
-export default function OnboardingFlow() {
+export default function OnboardingFormComponent() {
   const [currentStep, setCurrentStep] = useState(0)
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [counties, setCounties] = useState<County[]>([]);
   const [formData, setFormData] = useState<FormData>({
     phoneNumber: '',
     companyName: '',
     companyType: '',
     website: '',
-    country: '',
-    county: '',
+    countryId: null,
+    countyId: null,
     companySize: '',
     employeeCount: '',
     needAssistance: false,
   })
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchCountries = async () => {
+      try {
+        console.log('Fetching countries...');
+        const response = await fetch('/api/countries');
+        console.log('API response:', response);
+        if (!response.ok) throw new Error('Failed to fetch countries');
+        const data = await response.json();
+        console.log('Fetched countries:', data);
+        setCountries(data);
+      } catch (error) {
+        console.error('Error fetching countries:', error);
+      }
+    };
+
+    fetchCountries();
+  }, []);
+
+  const fetchCounties = async (countryId: number) => {
+    if (countryId === 1) { // 1 is the ID for Kenya
+      try {
+        console.log('Fetching counties...');
+        const response = await fetch(`/api/counties?countryId=${countryId}`);
+        console.log('Response status:', response.status);
+        const text = await response.text();
+        console.log('Response text:', text);
+        if (!response.ok) throw new Error(`Failed to fetch counties: ${response.status} ${text}`);
+        const data = JSON.parse(text);
+        console.log('Fetched counties:', data);
+        setCounties(data);
+      } catch (error: unknown) {
+        console.error('Error fetching counties:', error);
+        const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+        toast.error(`Failed to fetch counties: ${errorMessage}`);
+      }
+    } else {
+      setCounties([]); // Clear counties if not Kenya
+    }
+  };
+
+  useEffect(() => {
+    if (formData.countryId) {
+      fetchCounties(formData.countryId);
+    }
+  }, [formData.countryId]);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -49,7 +110,18 @@ export default function OnboardingFlow() {
   }
 
   const handleSelectChange = (name: keyof FormData, value: string) => {
-    setFormData(prevData => ({ ...prevData, [name]: value }))
+    const numValue = parseInt(value, 10);
+    setFormData(prevData => ({ 
+      ...prevData, 
+      [name]: isNaN(numValue) ? null : numValue,
+      // Reset countyId when country changes
+      ...(name === 'countryId' ? { countyId: null } : {})
+    }));
+
+    // If a country is selected, fetch counties
+    if (name === 'countryId' && !isNaN(numValue)) {
+      fetchCounties(numValue);
+    }
   }
 
   const handleCheckboxChange = (checked: boolean) => {
@@ -64,28 +136,91 @@ export default function OnboardingFlow() {
     setCurrentStep(prevStep => prevStep - 1)
   }
 
-  const handleSubmit = async () => {
-    try {
-      const userId = localStorage.getItem('userId');
-      if (!userId) {
-        console.error('User ID not found');
-        return;
-      }
+  const validateForm = () => {
+    if (!formData.phoneNumber) {
+      toast.error('Phone number is required');
+      return false;
+    }
+    if (!formData.companyName) {
+      toast.error('Company name is required');
+      return false;
+    }
+    if (!formData.companyType) {
+      toast.error('Company type is required');
+      return false;
+    }
+    if (!formData.countryId) {
+      toast.error('Country is required');
+      return false;
+    }
+    if (!formData.companySize) {
+      toast.error('Company size is required');
+      return false;
+    }
+    if (!formData.employeeCount) {
+      toast.error('Employee count is required');
+      return false;
+    }
+    if (formData.countryId === 1 && !formData.countyId) {
+      toast.error('County is required for Kenya');
+      return false;
+    }
+    return true;
+  };
 
+  const handleSubmit = async () => {
+    if (!validateForm()) {
+      console.log('Form validation failed');
+      return;
+    }
+
+    const employerId = localStorage.getItem('employerId');
+    if (!employerId) {
+      console.log('Employer ID not found, redirecting to signup');
+      toast.error('Employer ID not found. Please sign up again.');
+      router.push('/signup');
+      return;
+    }
+
+    try {
+      console.log('Submitting onboarding data:', formData);
       const response = await fetch('/api/onboarding', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, userId })
+        body: JSON.stringify({ 
+          employerId: parseInt(employerId),
+          phoneNumber: formData.phoneNumber,
+          companyName: formData.companyName,
+          companyType: formData.companyType,
+          website: formData.website,
+          countryId: formData.countryId,
+          countyId: formData.countyId,
+          companySize: formData.companySize,
+          employeeCount: parseInt(formData.employeeCount),
+          needAssistance: formData.needAssistance,
+        })
       });
 
+      const data = await response.json();
+      console.log('Full onboarding response:', response);
+      console.log('Onboarding response data:', data);
+
       if (response.ok) {
-        console.log('Onboarding completed successfully');
-        router.push('/dashboard'); // Redirect to dashboard after successful onboarding
+        toast.success('Onboarding completed successfully');
+        console.log('Attempting to redirect to dashboard...');
+        try {
+          router.push('/dashboard');
+          console.log('Router.push to dashboard initiated');
+        } catch (err) {
+          console.error('Error during redirection:', err);
+        }
       } else {
-        console.error('Onboarding failed');
+        console.error('Onboarding failed:', data.error || 'Unknown error');
+        toast.error(`Onboarding failed: ${data.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Onboarding error:', error);
+      toast.error('An unexpected error occurred. Please try again.');
     }
   };
 
@@ -152,31 +287,32 @@ export default function OnboardingFlow() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="country">Country</Label>
-              <Select name="country" onValueChange={(value) => handleSelectChange("country", value)}>
+              <Select name="countryId" onValueChange={(value) => handleSelectChange("countryId", value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select country" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="kenya">Kenya</SelectItem>
-                  <SelectItem value="uganda">Uganda</SelectItem>
-                  <SelectItem value="tanzania">Tanzania</SelectItem>
-                  <SelectItem value="rwanda">Rwanda</SelectItem>
-                  <SelectItem value="burundi">Burundi</SelectItem>
+                  {countries.map((country) => (
+                    <SelectItem key={country.id} value={country.id.toString()}>
+                      {country.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
-            {formData.country === 'kenya' && (
+            {formData.countryId === 1 && (
               <div className="space-y-2">
                 <Label htmlFor="county">County</Label>
-                <Select name="county" onValueChange={(value) => handleSelectChange("county", value)}>
+                <Select name="countyId" onValueChange={(value) => handleSelectChange("countyId", value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select county" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="nairobi">Nairobi</SelectItem>
-                    <SelectItem value="mombasa">Mombasa</SelectItem>
-                    <SelectItem value="kisumu">Kisumu</SelectItem>
-                    {/* Add all 47 Kenyan counties here */}
+                    {counties.map((county) => (
+                      <SelectItem key={county.id} value={county.id.toString()}>
+                        {county.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

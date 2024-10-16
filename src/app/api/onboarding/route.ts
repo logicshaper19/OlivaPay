@@ -1,42 +1,52 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { companydetails, onboardingpreferences } from '@/lib/schema';
+import { companyDetails, onboardingPreferences } from '@/lib/schema';
+import { InferModel } from 'drizzle-orm';
+
+type NewCompanyDetails = InferModel<typeof companyDetails, 'insert'>;
+type NewOnboardingPreferences = InferModel<typeof onboardingPreferences, 'insert'>;
 
 export async function POST(req: Request) {
   try {
     const { 
-      userId,
+      employerId, 
+      companyName, 
+      companyType, 
+      website, 
+      countryId, 
+      countyId, 
+      companySize, 
+      employeeCount, 
+      needAssistance 
+    } = await req.json();
+
+    // Insert company details
+    const newCompanyDetails: NewCompanyDetails = {
+      id: 0, // This will be ignored by the database and auto-generated
+      employerId: Number(employerId),
       companyName,
       companyType,
       website,
-      country,
-      county,
-      companySize,
-      employeeCount,
-      needAssistance
-    } = await req.json();
+      countryId: Number(countryId),
+      countyId: countyId ? Number(countyId) : null,
+      companySize
+    };
 
-    // Create company details
-    const [newCompanyDetails] = await db.insert(companydetails).values({
-      employer_id: userId,
-      company_name: companyName,
-      company_type: companyType,
-      website,
-      country_id: country,
-      county_id: county,
-      company_size: companySize
-    }).returning();
+    await db.insert(companyDetails).values(newCompanyDetails).execute();
 
-    // Create onboarding preferences
-    await db.insert(onboardingpreferences).values({
-      employer_id: userId,
-      employee_count: parseInt(employeeCount),
-      need_assistance: needAssistance
-    });
+    // Insert onboarding preferences
+    const newOnboardingPreferences: NewOnboardingPreferences = {
+      id: 0, // This will be ignored by the database and auto-generated
+      employerId: Number(employerId),
+      employeeCount: Number(employeeCount),
+      needAssistance: Boolean(needAssistance)
+    };
 
-    return NextResponse.json({ message: 'Onboarding completed successfully', companyId: newCompanyDetails.id }, { status: 201 });
+    await db.insert(onboardingPreferences).values(newOnboardingPreferences).execute();
+
+    return NextResponse.json({ message: 'Onboarding data saved successfully' }, { status: 200 });
   } catch (error) {
-    console.error('Onboarding error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('Error in onboarding:', error);
+    return NextResponse.json({ error: 'An error occurred during onboarding' }, { status: 500 });
   }
 }

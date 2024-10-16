@@ -3,41 +3,40 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { employees } from '@/lib/schema';
-import { InferModel } from 'drizzle-orm';
 
-type NewEmployee = InferModel<typeof employees, 'insert'>;
+function parseDate(dateString: string | null): Date | null {
+  if (!dateString) return null;
+  const date = new Date(dateString);
+  return isNaN(date.getTime()) ? null : date;
+}
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
+  const body = await request.json();
+  const { firstName, lastName, phoneNumber, gender, dateOfBirth, jobTitle, department, startDate, employerId } = body;
+
+  const parsedDateOfBirth = parseDate(dateOfBirth);
+  const parsedStartDate = parseDate(startDate);
+
+  if (!parsedDateOfBirth || !parsedStartDate) {
+    return NextResponse.json({ error: 'Invalid date format' }, { status: 400 });
+  }
+
   try {
-    const {
-      employerId,
+    const newEmployee = await db.insert(employees).values({
       firstName,
       lastName,
       phoneNumber,
       gender,
-      dateOfBirth,
+      dateOfBirth: parsedDateOfBirth,
       jobTitle,
       department,
-      startDate,
-    } = await req.json();
+      startDate: parsedStartDate,
+      employerId: Number(employerId)
+    }).returning();
 
-    const newEmployeeData: NewEmployee = {
-      employer_id: employerId,
-      first_name: firstName,
-      last_name: lastName,
-      phone_number: phoneNumber,
-      gender,
-      date_of_birth: dateOfBirth ? new Date(dateOfBirth).toISOString().split('T')[0] : null,
-      job_title: jobTitle,
-      department,
-      start_date: startDate ? new Date(startDate).toISOString().split('T')[0] : null,
-    };
-
-    const [newEmployee] = await db.insert(employees).values(newEmployeeData).returning();
-
-    return NextResponse.json({ message: 'Employee added successfully', employee: newEmployee }, { status: 201 });
+    return NextResponse.json(newEmployee[0]);
   } catch (error) {
-    console.error('Error adding employee:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('Error creating employee:', error);
+    return NextResponse.json({ error: 'Failed to create employee' }, { status: 500 });
   }
 }

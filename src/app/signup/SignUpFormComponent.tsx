@@ -1,7 +1,6 @@
 'use client';
 
-import React from 'react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,6 +8,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Leaf } from "lucide-react"
 import Link from "next/link"
+import { toast } from 'react-hot-toast'; // Add this for user notifications
+
+interface SignUpResponse {
+  employerId: string;
+  // Add other fields that your API returns
+}
 
 interface SignUpFormComponentProps {
   onSubmit: (formData: FormData) => Promise<void>;
@@ -19,8 +24,7 @@ const SignUpFormComponent: React.FC<SignUpFormComponentProps> = ({ onSubmit }) =
     firstName: '',
     lastName: '',
     email: '',
-    password: '',
-    phoneNumber: ''
+    password: ''
   });
   const router = useRouter();
 
@@ -38,17 +42,25 @@ const SignUpFormComponent: React.FC<SignUpFormComponentProps> = ({ onSubmit }) =
         body: JSON.stringify(formData)
       });
 
+      const data = await response.json();
+      console.log('Signup response:', data);
+
       if (response.ok) {
-        const data = await response.json();
-        // Store userId in localStorage or context for onboarding
-        localStorage.setItem('userId', data.userId);
-        router.push('/onboarding');
+        if (data.employerId) {
+          localStorage.setItem('employerId', data.employerId.toString());
+          toast.success('Signup successful! Please complete the onboarding process.');
+          router.push('/onboarding'); // Change this line to redirect to onboarding
+        } else {
+          console.error('Employer ID not found in response:', data);
+          toast.error('Signup successful, but there was an issue. Please try logging in.');
+          router.push('/login');
+        }
       } else {
-        // Handle errors (e.g., show error message)
-        console.error('Signup failed');
+        toast.error(`Signup failed: ${data.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Signup error:', error);
+      toast.error('An unexpected error occurred. Please try again.');
     }
   };
 
@@ -84,10 +96,6 @@ const SignUpFormComponent: React.FC<SignUpFormComponentProps> = ({ onSubmit }) =
                 <div className="flex flex-col space-y-1.5">
                   <Label htmlFor="password">Create Password</Label>
                   <Input id="password" name="password" type="password" value={formData.password} onChange={handleInputChange} placeholder="Enter your password" />
-                </div>
-                <div className="flex flex-col space-y-1.5">
-                  <Label htmlFor="phoneNumber">Phone Number</Label>
-                  <Input id="phoneNumber" name="phoneNumber" type="tel" value={formData.phoneNumber} onChange={handleInputChange} placeholder="Enter your phone number" />
                 </div>
               </div>
               <Button type="submit" className="w-full mt-4 bg-black text-white hover:bg-gray-800">Sign Up</Button>

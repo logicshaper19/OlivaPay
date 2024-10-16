@@ -3,27 +3,34 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import SignUpFormComponent from './SignUpFormComponent';
+import { toast } from 'react-hot-toast';
 
 export default function SignupPage() {
   const [error, setError] = useState('');
   const router = useRouter();
 
-  const handleSignup = async (formData: FormData) => {
+  const handleSignup = async (formData: any) => {
     try {
-      const response = await fetch('/api/signup', {
+      const response = await fetch('/api/auth/signup', {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
       });
-      
+
       if (response.ok) {
-        router.push('/dashboard');
+        toast.success('Signup successful!');
+        router.push('/onboarding');
       } else {
         const data = await response.json();
         setError(data.message || 'An error occurred during signup');
+        toast.error(data.message || 'An error occurred during signup');
       }
-    } catch (err) {
+    } catch (error) {
+      console.error('Signup error:', error);
       setError('An unexpected error occurred');
-      console.error(err);
+      toast.error('An unexpected error occurred');
     }
   };
 
