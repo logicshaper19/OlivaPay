@@ -1,67 +1,57 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Leaf } from "lucide-react"
-import Link from "next/link"
-import { toast } from 'react-hot-toast'; // Add this for user notifications
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Leaf } from "lucide-react";
+import Link from "next/link";
+import { toast } from "react-hot-toast"; // Add this for user notifications
 
 interface SignUpResponse {
   employerId: string;
   // Add other fields that your API returns
 }
 
-interface SignUpFormComponentProps {
-  onSubmit: (formData: FormData) => Promise<void>;
+interface SignUpFormData {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
 }
 
-const SignUpFormComponent: React.FC<SignUpFormComponentProps> = ({ onSubmit }) => {
+interface SignUpFormComponentProps {
+  onSubmit: (formData: SignUpFormData) => Promise<void>;
+}
+
+const SignUpFormComponent: React.FC<SignUpFormComponentProps> = ({
+  onSubmit,
+}) => {
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: ''
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
   });
   const router = useRouter();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
-
-      const data = await response.json();
-      console.log('Signup response:', data);
-
-      if (response.ok) {
-        if (data.employerId) {
-          localStorage.setItem('employerId', data.employerId.toString());
-          toast.success('Signup successful! Please complete the onboarding process.');
-          router.push('/onboarding'); // Change this line to redirect to onboarding
-        } else {
-          console.error('Employer ID not found in response:', data);
-          toast.error('Signup successful, but there was an issue. Please try logging in.');
-          router.push('/login');
-        }
-      } else {
-        toast.error(`Signup failed: ${data.error || 'Unknown error'}`);
-      }
-    } catch (error) {
-      console.error('Signup error:', error);
-      toast.error('An unexpected error occurred. Please try again.');
-    }
+    await onSubmit(formData);
   };
 
   return (
@@ -73,7 +63,9 @@ const SignUpFormComponent: React.FC<SignUpFormComponentProps> = ({ onSubmit }) =
         </div>
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl text-center">Create your account</CardTitle>
+            <CardTitle className="text-2xl text-center">
+              Create your account
+            </CardTitle>
             <CardDescription className="text-center">
               Sign up to start managing your payroll with OlivaPay
             </CardDescription>
@@ -83,22 +75,53 @@ const SignUpFormComponent: React.FC<SignUpFormComponentProps> = ({ onSubmit }) =
               <div className="grid w-full items-center gap-4">
                 <div className="flex flex-col space-y-1.5">
                   <Label htmlFor="firstName">First Name</Label>
-                  <Input id="firstName" name="firstName" value={formData.firstName} onChange={handleInputChange} placeholder="Enter your first name" />
+                  <Input
+                    id="firstName"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleInputChange}
+                    placeholder="Enter your first name"
+                  />
                 </div>
                 <div className="flex flex-col space-y-1.5">
                   <Label htmlFor="lastName">Last Name</Label>
-                  <Input id="lastName" name="lastName" value={formData.lastName} onChange={handleInputChange} placeholder="Enter your last name" />
+                  <Input
+                    id="lastName"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleInputChange}
+                    placeholder="Enter your last name"
+                  />
                 </div>
                 <div className="flex flex-col space-y-1.5">
                   <Label htmlFor="email">Email Address</Label>
-                  <Input id="email" name="email" type="email" value={formData.email} onChange={handleInputChange} placeholder="Enter your email address" />
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    placeholder="Enter your email address"
+                  />
                 </div>
                 <div className="flex flex-col space-y-1.5">
                   <Label htmlFor="password">Create Password</Label>
-                  <Input id="password" name="password" type="password" value={formData.password} onChange={handleInputChange} placeholder="Enter your password" />
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    placeholder="Enter your password"
+                  />
                 </div>
               </div>
-              <Button type="submit" className="w-full mt-4 bg-black text-white hover:bg-gray-800">Sign Up</Button>
+              <Button
+                type="submit"
+                className="w-full mt-4 bg-black text-white hover:bg-gray-800"
+              >
+                Sign Up
+              </Button>
             </form>
           </CardContent>
           <CardFooter className="flex flex-col">
@@ -112,7 +135,7 @@ const SignUpFormComponent: React.FC<SignUpFormComponentProps> = ({ onSubmit }) =
         </Card>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default SignUpFormComponent;

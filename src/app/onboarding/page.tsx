@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
 // Implement your onboarding process here
 
-import OnboardingFormComponent from './OnboardingFormComponent';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import OnboardingFormComponent from "./OnboardingFormComponent";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 interface OnboardingFormData {
   // Add all the fields from your onboarding form
@@ -23,42 +23,42 @@ const OnboardingPage = () => {
   useEffect(() => {
     const fetchCountries = async () => {
       try {
-        const response = await fetch('/api/countries');
-        if (!response.ok) throw new Error('Failed to fetch countries');
+        const response = await fetch("/api/countries");
+        if (!response.ok) throw new Error("Failed to fetch countries");
         const data = await response.json();
-        console.log('Fetched countries:', data);
+        console.log("Fetched countries:", data);
         setCountries(data);
       } catch (error) {
-        console.error('Error fetching countries:', error);
+        console.error("Error fetching countries:", error);
       }
     };
 
     fetchCountries();
   }, []);
 
-  console.log('Current countries state:', countries);
+  console.log("Current countries state:", countries);
 
   const handleOnboardingSubmit = async (formData: OnboardingFormData) => {
     try {
       // Process onboarding data submission
-      const response = await fetch('/api/onboarding', {
-        method: 'POST',
+      const response = await fetch("/api/onboarding", {
+        method: "POST",
         body: JSON.stringify(formData),
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
       if (response.ok) {
         // If onboarding is successful, redirect to dashboard
-        console.log('Attempting to redirect to dashboard...');
-        router.push('/dashboard');
+        console.log("Attempting to redirect to dashboard...");
+        router.push("/dashboard");
       } else {
         // Handle onboarding error
-        console.error('Onboarding failed');
+        console.error("Onboarding failed");
       }
     } catch (error) {
-      console.error('Error during onboarding:', error);
+      console.error("Error during onboarding:", error);
     }
   };
 

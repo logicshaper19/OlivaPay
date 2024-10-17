@@ -1,4 +1,4 @@
-import { Leaf } from "lucide-react"
+import { Leaf } from "lucide-react";
 
 export default function Footer() {
   return (
@@ -11,9 +11,21 @@ export default function Footer() {
           </div>
           <nav>
             <ul className="flex space-x-6">
-              <li><a href="#" className="text-gray-600 hover:text-black">Terms of Service</a></li>
-              <li><a href="#" className="text-gray-600 hover:text-black">Privacy Policy</a></li>
-              <li><a href="#" className="text-gray-600 hover:text-black">Contact Us</a></li>
+              <li>
+                <a href="#" className="text-gray-600 hover:text-black">
+                  Terms of Service
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-gray-600 hover:text-black">
+                  Privacy Policy
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-gray-600 hover:text-black">
+                  Contact Us
+                </a>
+              </li>
             </ul>
           </nav>
         </div>
@@ -22,5 +34,5 @@ export default function Footer() {
         </div>
       </div>
     </footer>
-  )
+  );
 }

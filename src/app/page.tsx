@@ -1,7 +1,7 @@
-import Hero from "@/components/Landing/Hero"
-import Features from "@/components/Landing/Features"
-import FAQ from "@/components/Landing/FAQ"
-import CallToAction from "@/components/Landing/CallToAction"
+import Hero from "@/components/Landing/Hero";
+import Features from "@/components/Landing/Features";
+import FAQ from "@/components/Landing/FAQ";
+import CallToAction from "@/components/Landing/CallToAction";
 
 export default function LandingPage() {
   return (
@@ -13,5 +13,5 @@ export default function LandingPage() {
         <CallToAction />
       </main>
     </div>
-  )
+  );
 }

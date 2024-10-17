@@ -1,36 +1,43 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import SignUpFormComponent from './SignUpFormComponent';
-import { toast } from 'react-hot-toast';
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import SignUpFormComponent from "./SignUpFormComponent";
+import { toast } from "react-hot-toast";
+
+interface SignUpFormData {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+}
 
 export default function SignupPage() {
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const router = useRouter();
 
-  const handleSignup = async (formData: { email: string; password: string }) => {
+  const handleSignup = async (formData: SignUpFormData) => {
     try {
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
       });
 
       if (response.ok) {
-        toast.success('Signup successful!');
-        router.push('/onboarding');
+        toast.success("Signup successful!");
+        router.push("/onboarding");
       } else {
         const data = await response.json();
-        setError(data.message || 'An error occurred during signup');
-        toast.error(data.message || 'An error occurred during signup');
+        setError(data.message || "An error occurred during signup");
+        toast.error(data.message || "An error occurred during signup");
       }
     } catch (error) {
-      console.error('Signup error:', error);
-      setError('An unexpected error occurred');
-      toast.error('An unexpected error occurred');
+      console.error("Signup error:", error);
+      setError("An unexpected error occurred");
+      toast.error("An unexpected error occurred");
     }
   };
 

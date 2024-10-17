@@ -1,23 +1,26 @@
-import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { companyDetails, onboardingPreferences } from '@/lib/schema';
-import { InferModel } from 'drizzle-orm';
+import { NextResponse } from "next/server";
+import { db } from "@/lib/db";
+import { companyDetails, onboardingPreferences } from "@/lib/schema";
+import { InferModel } from "drizzle-orm";
 
-type NewCompanyDetails = InferModel<typeof companyDetails, 'insert'>;
-type NewOnboardingPreferences = InferModel<typeof onboardingPreferences, 'insert'>;
+type NewCompanyDetails = InferModel<typeof companyDetails, "insert">;
+type NewOnboardingPreferences = InferModel<
+  typeof onboardingPreferences,
+  "insert"
+>;
 
 export async function POST(req: Request) {
   try {
-    const { 
-      employerId, 
-      companyName, 
-      companyType, 
-      website, 
-      countryId, 
-      countyId, 
-      companySize, 
-      employeeCount, 
-      needAssistance 
+    const {
+      employerId,
+      companyName,
+      companyType,
+      website,
+      countryId,
+      countyId,
+      companySize,
+      employeeCount,
+      needAssistance,
     } = await req.json();
 
     // Insert company details
@@ -29,7 +32,7 @@ export async function POST(req: Request) {
       website,
       countryId: Number(countryId),
       countyId: countyId ? Number(countyId) : null,
-      companySize
+      companySize,
     };
 
     await db.insert(companyDetails).values(newCompanyDetails).execute();
@@ -39,14 +42,23 @@ export async function POST(req: Request) {
       id: 0, // This will be ignored by the database and auto-generated
       employerId: Number(employerId),
       employeeCount: Number(employeeCount),
-      needAssistance: Boolean(needAssistance)
+      needAssistance: Boolean(needAssistance),
     };
 
-    await db.insert(onboardingPreferences).values(newOnboardingPreferences).execute();
+    await db
+      .insert(onboardingPreferences)
+      .values(newOnboardingPreferences)
+      .execute();
 
-    return NextResponse.json({ message: 'Onboarding data saved successfully' }, { status: 200 });
+    return NextResponse.json(
+      { message: "Onboarding data saved successfully" },
+      { status: 200 },
+    );
   } catch (error) {
-    console.error('Error in onboarding:', error);
-    return NextResponse.json({ error: 'An error occurred during onboarding' }, { status: 500 });
+    console.error("Error in onboarding:", error);
+    return NextResponse.json(
+      { error: "An error occurred during onboarding" },
+      { status: 500 },
+    );
   }
 }

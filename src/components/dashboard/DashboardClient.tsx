@@ -1,34 +1,53 @@
 "use client";
 
-import { useState } from 'react'
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Leaf, Home, Users, CreditCard, Heart, FileText, PlusCircle, DollarSign, Clock, BarChart2 } from "lucide-react"
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Leaf,
+  Home,
+  Users,
+  CreditCard,
+  Heart,
+  FileText,
+  PlusCircle,
+  DollarSign,
+  Clock,
+  BarChart2,
+} from "lucide-react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 const payrollData = [
-  { month: 'Jan', amount: 50000 },
-  { month: 'Feb', amount: 55000 },
-  { month: 'Mar', amount: 60000 },
-  { month: 'Apr', amount: 58000 },
-  { month: 'May', amount: 62000 },
-  { month: 'Jun', amount: 65000 },
-]
+  { month: "Jan", amount: 50000 },
+  { month: "Feb", amount: 55000 },
+  { month: "Mar", amount: 60000 },
+  { month: "Apr", amount: 58000 },
+  { month: "May", amount: 62000 },
+  { month: "Jun", amount: 65000 },
+];
 
 const recentActivities = [
-  { id: 1, action: 'New employee added', time: '2 hours ago' },
-  { id: 2, action: 'Payroll processed', time: '1 day ago' },
-  { id: 3, action: 'Benefit plan updated', time: '3 days ago' },
-  { id: 4, action: 'Tax filing completed', time: '1 week ago' },
-]
+  { id: 1, action: "New employee added", time: "2 hours ago" },
+  { id: 2, action: "Payroll processed", time: "1 day ago" },
+  { id: 3, action: "Benefit plan updated", time: "3 days ago" },
+  { id: 4, action: "Tax filing completed", time: "1 week ago" },
+];
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState('home')
+  const [activeTab, setActiveTab] = useState("home");
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'home':
+      case "home":
         return (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -45,11 +64,13 @@ export default function Dashboard() {
                 </Button>
               </div>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Employees</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Total Employees
+                  </CardTitle>
                   <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -58,7 +79,9 @@ export default function Dashboard() {
               </Card>
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Monthly Payroll</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Monthly Payroll
+                  </CardTitle>
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -67,7 +90,9 @@ export default function Dashboard() {
               </Card>
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Active Benefits</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Active Benefits
+                  </CardTitle>
                   <Heart className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -76,7 +101,9 @@ export default function Dashboard() {
               </Card>
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Pending Actions</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Pending Actions
+                  </CardTitle>
                   <Clock className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -109,28 +136,33 @@ export default function Dashboard() {
               <CardContent>
                 <ul className="space-y-4">
                   {recentActivities.map((activity) => (
-                    <li key={activity.id} className="flex justify-between items-center">
+                    <li
+                      key={activity.id}
+                      className="flex justify-between items-center"
+                    >
                       <span>{activity.action}</span>
-                      <span className="text-sm text-muted-foreground">{activity.time}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {activity.time}
+                      </span>
                     </li>
                   ))}
                 </ul>
               </CardContent>
             </Card>
           </div>
-        )
-      case 'employees':
-        return <div>Employees Content</div>
-      case 'payments':
-        return <div>Payments Content</div>
-      case 'benefits':
-        return <div>Benefits Content</div>
-      case 'transactions':
-        return <div>Transactions Content</div>
+        );
+      case "employees":
+        return <div>Employees Content</div>;
+      case "payments":
+        return <div>Payments Content</div>;
+      case "benefits":
+        return <div>Benefits Content</div>;
+      case "transactions":
+        return <div>Transactions Content</div>;
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -143,27 +175,42 @@ export default function Dashboard() {
           <nav>
             <ul className="flex space-x-6">
               <li>
-                <Button variant={activeTab === 'home' ? 'default' : 'ghost'} onClick={() => setActiveTab('home')}>
+                <Button
+                  variant={activeTab === "home" ? "default" : "ghost"}
+                  onClick={() => setActiveTab("home")}
+                >
                   <Home className="mr-2 h-4 w-4" /> Home
                 </Button>
               </li>
               <li>
-                <Button variant={activeTab === 'employees' ? 'default' : 'ghost'} onClick={() => setActiveTab('employees')}>
+                <Button
+                  variant={activeTab === "employees" ? "default" : "ghost"}
+                  onClick={() => setActiveTab("employees")}
+                >
                   <Users className="mr-2 h-4 w-4" /> Employees
                 </Button>
               </li>
               <li>
-                <Button variant={activeTab === 'payments' ? 'default' : 'ghost'} onClick={() => setActiveTab('payments')}>
+                <Button
+                  variant={activeTab === "payments" ? "default" : "ghost"}
+                  onClick={() => setActiveTab("payments")}
+                >
                   <CreditCard className="mr-2 h-4 w-4" /> Payments
                 </Button>
               </li>
               <li>
-                <Button variant={activeTab === 'benefits' ? 'default' : 'ghost'} onClick={() => setActiveTab('benefits')}>
+                <Button
+                  variant={activeTab === "benefits" ? "default" : "ghost"}
+                  onClick={() => setActiveTab("benefits")}
+                >
                   <Heart className="mr-2 h-4 w-4" /> Benefits
                 </Button>
               </li>
               <li>
-                <Button variant={activeTab === 'transactions' ? 'default' : 'ghost'} onClick={() => setActiveTab('transactions')}>
+                <Button
+                  variant={activeTab === "transactions" ? "default" : "ghost"}
+                  onClick={() => setActiveTab("transactions")}
+                >
                   <FileText className="mr-2 h-4 w-4" /> Transactions
                 </Button>
               </li>
@@ -172,9 +219,7 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
-        {renderTabContent()}
-      </main>
+      <main className="container mx-auto px-4 py-8">{renderTabContent()}</main>
     </div>
-  )
+  );
 }
