@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
 import SignUpFormComponent from "./SignUpFormComponent";
-import { toast } from "react-hot-toast";
 
 interface SignUpFormData {
   email: string;
@@ -12,11 +11,17 @@ interface SignUpFormData {
   lastName: string;
 }
 
+interface UserData {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+}
+
 export default function SignupPage() {
-  const [error, setError] = useState("");
   const router = useRouter();
 
-  const handleSignup = async (formData: SignUpFormData) => {
+  const handleSignup = async (formData: SignUpFormData): Promise<UserData> => {
     try {
       const response = await fetch("/api/auth/signup", {
         method: "POST",
@@ -26,25 +31,33 @@ export default function SignupPage() {
         body: JSON.stringify(formData),
       });
 
-      if (response.ok) {
-        toast.success("Signup successful!");
-        router.push("/onboarding");
-      } else {
-        const data = await response.json();
-        setError(data.message || "An error occurred during signup");
-        toast.error(data.message || "An error occurred during signup");
+      if (!response.ok) {
+        throw new Error("Signup failed");
       }
+
+      const userData: UserData = await response.json();
+      
+      // Ensure the returned data matches the UserData interface
+      if (!userData.id || !userData.email || !userData.firstName || !userData.lastName) {
+        throw new Error("Incomplete user data received");
+      }
+
+      // Store the user ID in localStorage
+      localStorage.setItem('employerId', userData.id);
+
+      // Redirect to the onboarding page
+      router.push('/onboarding');
+
+      return userData;
     } catch (error) {
       console.error("Signup error:", error);
-      setError("An unexpected error occurred");
-      toast.error("An unexpected error occurred");
+      throw error;
     }
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-4">Sign Up</h1>
-      {error && <p className="text-red-500 mb-4">{error}</p>}
       <SignUpFormComponent onSubmit={handleSignup} />
     </div>
   );

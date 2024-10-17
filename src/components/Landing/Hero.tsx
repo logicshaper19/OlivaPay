@@ -10,7 +10,7 @@ export default function Hero() {
       <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
         Built for Kenyan businesses handling casual worker payments, OlivaPay
         ensures compliance and streamlines retirement and healthcare
-        benefits—all while supporting your employees' well-being.
+        benefits—all while supporting your employees&apos; well-being.
       </p>
       <div className="flex justify-center space-x-4 mb-8">
         <Button size="lg" className="bg-black text-white hover:bg-gray-800">

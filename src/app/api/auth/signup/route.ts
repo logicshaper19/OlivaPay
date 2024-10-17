@@ -1,35 +1,49 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { employers } from "@/lib/schema";
+import { supabase } from "@/lib/supabaseClient";
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    const body: { email: string; password: string; firstName: string; lastName: string } = await req.json();
-    console.log("Received signup data:", body);
+    const { firstName, lastName, email, password } = await request.json();
 
-    const newEmployer = await db
-      .insert(employers)
-      .values({
-        id: undefined as any, // This tells Drizzle to use the database's auto-increment
-        firstName: body.firstName,
-        lastName: body.lastName,
-        email: body.email,
-        password: body.password,
-        phoneNumber: "", // Add a default empty string for phoneNumber
-      })
-      .returning({ id: employers.id });
+    // Validate the input
+    if (!firstName || !lastName || !email || !password) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
 
-    console.log("New employer created:", newEmployer[0]);
+    // Sign up the user using Supabase
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          first_name: firstName,
+          last_name: lastName,
+        }
+      }
+    });
 
-    return NextResponse.json(
-      { employerId: newEmployer[0].id, message: "Signup successful" },
-      { status: 201 },
-    );
+    if (error) throw error;
+
+    if (data.user) {
+      return NextResponse.json({
+        user: {
+          id: data.user.id,
+          firstName: data.user.user_metadata.first_name,
+          lastName: data.user.user_metadata.last_name,
+          email: data.user.email,
+        },
+      });
+    } else {
+      throw new Error("User creation failed");
+    }
   } catch (error) {
-    console.error("Signup error:", error);
-    return NextResponse.json(
-      { error: "Failed to create account" },
-      { status: 500 },
-    );
+    console.error('Signup error:', error);
+    if (error instanceof Error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json({ error: "An unknown error occurred" }, { status: 500 });
   }
 }

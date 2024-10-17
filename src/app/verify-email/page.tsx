@@ -46,7 +46,11 @@ export default function VerifyEmailPage() {
         });
       }
     } catch (error) {
-      setFeedback({ message: "An unexpected error occurred", type: "error" });
+      console.error("Verification error:", error);
+      setFeedback({ 
+        message: error instanceof Error ? error.message : "An unexpected error occurred", 
+        type: "error" 
+      });
     }
   };
 

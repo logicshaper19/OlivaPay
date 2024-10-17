@@ -15,12 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Leaf } from "lucide-react";
 import Link from "next/link";
-import { toast } from "react-hot-toast"; // Add this for user notifications
-
-interface SignUpResponse {
-  employerId: string;
-  // Add other fields that your API returns
-}
+import { toast } from "react-hot-toast";
 
 interface SignUpFormData {
   email: string;
@@ -29,8 +24,13 @@ interface SignUpFormData {
   lastName: string;
 }
 
+interface UserData {
+  id: string;
+  // Add other properties as needed
+}
+
 interface SignUpFormComponentProps {
-  onSubmit: (formData: SignUpFormData) => Promise<void>;
+  onSubmit: (formData: SignUpFormData) => Promise<UserData>;
 }
 
 const SignUpFormComponent: React.FC<SignUpFormComponentProps> = ({
@@ -51,7 +51,20 @@ const SignUpFormComponent: React.FC<SignUpFormComponentProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSubmit(formData);
+    try {
+      const userData = await onSubmit(formData);
+      if (userData && userData.id) {
+        localStorage.setItem('userId', userData.id);
+        toast.success("Sign up successful!");
+        router.push("/onboarding");
+      } else {
+        throw new Error("User data is incomplete");
+      }
+    } catch (error) {
+      console.error("Sign up error:", error);
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+      toast.error(`Sign up failed: ${errorMessage}`);
+    }
   };
 
   return (

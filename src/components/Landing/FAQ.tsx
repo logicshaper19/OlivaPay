@@ -75,13 +75,13 @@ export default function FAQ() {
     <section id="faq" className="py-24 bg-gray-50">
       <div className="container mx-auto px-4">
         <h2 className="text-4xl font-bold text-center mb-4">
-          Got questions? We've got answers.
+          Got questions? We&apos;ve got answers.
         </h2>
         <h3 className="text-2xl font-semibold text-center mb-8">
           Frequently Asked Questions
         </h3>
         <p className="text-xl text-gray-600 text-center mb-12 max-w-3xl mx-auto">
-          Find answers to common questions about OlivaPay's features,
+          Find answers to common questions about OlivaPay&apos;s features,
           technology, and security.
         </p>
         <div className="max-w-3xl mx-auto mb-12">

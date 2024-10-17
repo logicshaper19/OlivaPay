@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Leaf,
   Home,
@@ -42,7 +41,7 @@ const recentActivities = [
   { id: 4, action: "Tax filing completed", time: "1 week ago" },
 ];
 
-export default function Dashboard() {
+export function DashboardClient() {
   const [activeTab, setActiveTab] = useState("home");
 
   const renderTabContent = () => {

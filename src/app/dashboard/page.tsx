@@ -1,8 +1,15 @@
 "use client";
 
-import DashboardClient from "@/components/dashboard/DashboardClient";
+import { DashboardGuard } from './DashboardGuard';
+import { DashboardClient } from './DashboardClientComponent';
+
+// If you used default export in DashboardClient.tsx, use this instead:
+// import DashboardClient from './DashboardClient';
 
 export default function DashboardPage() {
-  console.log("Dashboard page component rendered");
-  return <DashboardClient />;
+  return (
+    <DashboardGuard>
+      <DashboardClient />
+    </DashboardGuard>
+  );
 }

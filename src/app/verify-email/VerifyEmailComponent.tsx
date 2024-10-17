@@ -1,7 +1,6 @@
 "use client";
 
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,14 +15,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Leaf } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
+import { toast } from "react-hot-toast";
 
 interface VerifyEmailComponentProps {
   onVerify: (token: string) => Promise<void>;
 }
 
-const VerifyEmailComponent: React.FC<VerifyEmailComponentProps> = ({
-  onVerify,
-}) => {
+const VerifyEmailComponent: React.FC<VerifyEmailComponentProps> = ({ onVerify }) => {
   const [verificationCode, setVerificationCode] = useState("");
   const [email, setEmail] = useState("");
   const router = useRouter();
@@ -31,36 +29,28 @@ const VerifyEmailComponent: React.FC<VerifyEmailComponentProps> = ({
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const { data, error } = await supabase.auth.verifyOtp({
-        email: email,
-        token: verificationCode,
-        type: "signup",
-      });
-
-      if (error) throw error;
-
-      // After successful verification, redirect to onboarding
+      await onVerify(verificationCode);
+      toast.success("Email verified successfully!");
       router.push("/onboarding");
     } catch (error) {
       console.error("Error during verification:", error);
-      // Handle error (show error message to user)
+      toast.error("Verification failed. Please try again.");
     }
   };
 
   const handleResendCode = async () => {
     try {
-      const { data, error } = await supabase.auth.resend({
+      const { error } = await supabase.auth.resend({
         type: "signup",
         email: email,
       });
 
       if (error) throw error;
 
-      // Notify user that the code has been resent
-      alert("Verification code has been resent to your email.");
+      toast.success("Verification code has been resent to your email.");
     } catch (error) {
       console.error("Error resending code:", error);
-      // Handle error (show error message to user)
+      toast.error("Failed to resend verification code. Please try again.");
     }
   };
 

@@ -10,7 +10,6 @@ import {
   char,
   serial,
 } from "drizzle-orm/pg-core";
-import { ChangeEvent } from "react";
 
 export const employers = pgTable("employers", {
   id: bigint("id", { mode: "number" }).primaryKey().notNull(),
