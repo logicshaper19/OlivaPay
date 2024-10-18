@@ -28,14 +28,15 @@ export async function POST(request: Request) {
     if (error) throw error;
 
     if (data.user) {
-      return NextResponse.json({
-        user: {
-          id: data.user.id,
-          firstName: data.user.user_metadata.first_name,
-          lastName: data.user.user_metadata.last_name,
-          email: data.user.email,
-        },
-      });
+      const userData = {
+        id: data.user.id,
+        email: data.user.email,
+        firstName: data.user.user_metadata.first_name,
+        lastName: data.user.user_metadata.last_name,
+      };
+
+      console.log("Sending response:", userData);
+      return NextResponse.json(userData);
     } else {
       throw new Error("User creation failed");
     }

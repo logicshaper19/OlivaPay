@@ -23,6 +23,7 @@ export default function SignupPage() {
 
   const handleSignup = async (formData: SignUpFormData): Promise<UserData> => {
     try {
+      console.log("Attempting signup with data:", formData);
       const response = await fetch("/api/auth/signup", {
         method: "POST",
         headers: {
@@ -31,11 +32,14 @@ export default function SignupPage() {
         body: JSON.stringify(formData),
       });
 
+      console.log("Signup response status:", response.status);
+
       if (!response.ok) {
         throw new Error("Signup failed");
       }
 
       const userData: UserData = await response.json();
+      console.log("Received user data:", userData);
       
       // Ensure the returned data matches the UserData interface
       if (!userData.id || !userData.email || !userData.firstName || !userData.lastName) {
@@ -44,8 +48,10 @@ export default function SignupPage() {
 
       // Store the user ID in localStorage
       localStorage.setItem('employerId', userData.id);
+      console.log("Stored employerId in localStorage:", userData.id);
 
       // Redirect to the onboarding page
+      console.log("Attempting to redirect to /onboarding");
       router.push('/onboarding');
 
       return userData;

@@ -23,6 +23,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Leaf } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { ErrorBoundary } from 'react-error-boundary';
 
 const steps = [
   {
@@ -61,6 +62,15 @@ interface FormData {
   companySize: string;
   employeeCount: string;
   needAssistance: boolean;
+}
+
+function ErrorFallback({error}: {error: Error}) {
+  return (
+    <div role="alert">
+      <p>Something went wrong:</p>
+      <pre>{error.message}</pre>
+    </div>
+  )
 }
 
 export default function OnboardingFormComponent() {
@@ -163,39 +173,8 @@ export default function OnboardingFormComponent() {
     setCurrentStep((prevStep) => prevStep - 1);
   };
 
-  const validateForm = () => {
-    if (!formData.phoneNumber) {
-      toast.error("Phone number is required");
-      return false;
-    }
-    if (!formData.companyName) {
-      toast.error("Company name is required");
-      return false;
-    }
-    if (!formData.companyType) {
-      toast.error("Company type is required");
-      return false;
-    }
-    if (!formData.countryId) {
-      toast.error("Country is required");
-      return false;
-    }
-    if (!formData.companySize) {
-      toast.error("Company size is required");
-      return false;
-    }
-    if (!formData.employeeCount) {
-      toast.error("Employee count is required");
-      return false;
-    }
-    if (formData.countryId === 1 && !formData.countyId) {
-      toast.error("County is required for Kenya");
-      return false;
-    }
-    return true;
-  };
-
   const handleSubmit = async () => {
+    console.log("handleSubmit called");
     if (!validateForm()) {
       console.log("Form validation failed");
       return;
@@ -228,18 +207,21 @@ export default function OnboardingFormComponent() {
         }),
       });
 
+      console.log("Onboarding API response status:", response.status);
       const data = await response.json();
-      console.log("Full onboarding response:", response);
-      console.log("Onboarding response data:", data);
+      console.log("Onboarding API response data:", data);
 
       if (response.ok) {
+        console.log("Onboarding completed successfully");
         toast.success("Onboarding completed successfully");
         console.log("Attempting to redirect to dashboard...");
         try {
-          router.push("/dashboard");
-          console.log("Router.push to dashboard initiated");
+          await router.push("/dashboard");
+          console.log("Router.push to dashboard completed");
         } catch (err) {
           console.error("Error during redirection:", err);
+          console.log("Falling back to window.location.href");
+          window.location.href = "/dashboard";
         }
       } else {
         console.error("Onboarding failed:", data.error || "Unknown error");
@@ -249,6 +231,23 @@ export default function OnboardingFormComponent() {
       console.error("Onboarding error:", error);
       toast.error("An unexpected error occurred. Please try again.");
     }
+  };
+
+  const validateForm = () => {
+    console.log("Validating form data:", formData);
+    if (!formData.phoneNumber) {
+      console.log("Validation failed: Phone number is required");
+      toast.error("Phone number is required");
+      return false;
+    }
+    if (!formData.companyName) {
+      console.log("Validation failed: Company name is required");
+      toast.error("Company name is required");
+      return false;
+    }
+    // Add more validations as needed
+    console.log("Form validation passed");
+    return true;
   };
 
   const renderStep = () => {
@@ -440,48 +439,62 @@ export default function OnboardingFormComponent() {
     }
   };
 
+  useEffect(() => {
+    const employerId = localStorage.getItem("employerId");
+    if (!employerId) {
+      console.log("No employerId found in localStorage on component mount");
+      toast.error("No employer ID found. Please sign up again.");
+      router.push("/signup");
+    } else {
+      console.log("EmployerId found in localStorage:", employerId);
+    }
+  }, []);
+
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-2xl">
-        <div className="flex items-center justify-center mb-8">
-          <Leaf className="h-8 w-8 text-green-500 mr-2" />
-          <span className="text-2xl font-bold">OlivaPay</span>
-        </div>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl">
-              {steps[currentStep].title}
-            </CardTitle>
-            <CardDescription>{steps[currentStep].description}</CardDescription>
-          </CardHeader>
-          <CardContent>{renderStep()}</CardContent>
-          <CardFooter className="flex justify-between">
-            <Button
-              variant="outline"
-              onClick={handlePrevious}
-              disabled={currentStep === 0}
-            >
-              Previous
-            </Button>
-            <Button
-              onClick={
-                currentStep === steps.length - 1 ? handleSubmit : handleNext
-              }
-            >
-              {currentStep === steps.length - 1 ? "Complete" : "Next"}
-            </Button>
-          </CardFooter>
-        </Card>
-        <div className="mt-4">
-          <Progress
-            value={((currentStep + 1) / steps.length) * 100}
-            className="w-full"
-          />
-          <p className="text-center mt-2 text-sm text-gray-500">
-            Step {currentStep + 1} of {steps.length}
-          </p>
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-2xl">
+          <div className="flex items-center justify-center mb-8">
+            <Leaf className="h-8 w-8 text-green-500 mr-2" />
+            <span className="text-2xl font-bold">OlivaPay</span>
+          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl">
+                {steps[currentStep].title}
+              </CardTitle>
+              <CardDescription>{steps[currentStep].description}</CardDescription>
+            </CardHeader>
+            <CardContent>{renderStep()}</CardContent>
+            <CardFooter className="flex justify-between">
+              <Button
+                variant="outline"
+                onClick={handlePrevious}
+                disabled={currentStep === 0}
+              >
+                Previous
+              </Button>
+              <Button
+                onClick={() => {
+                  console.log("Button clicked, currentStep:", currentStep);
+                  currentStep === steps.length - 1 ? handleSubmit() : handleNext();
+                }}
+              >
+                {currentStep === steps.length - 1 ? "Complete" : "Next"}
+              </Button>
+            </CardFooter>
+          </Card>
+          <div className="mt-4">
+            <Progress
+              value={((currentStep + 1) / steps.length) * 100}
+              className="w-full"
+            />
+            <p className="text-center mt-2 text-sm text-gray-500">
+              Step {currentStep + 1} of {steps.length}
+            </p>
+          </div>
         </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 }
