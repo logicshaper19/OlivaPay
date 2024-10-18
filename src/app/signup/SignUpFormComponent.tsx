@@ -67,8 +67,15 @@ const SignUpFormComponent: React.FC<SignUpFormComponentProps> = ({
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (validateForm()) {
-      // Proceed with form submission
-      // ... rest of your submission logic
+      try {
+        const userData = await onSubmit(formData);
+        console.log("User signed up successfully:", userData);
+        toast.success("Sign up successful!");
+        router.push('/onboarding'); // Redirect to onboarding page after successful signup
+      } catch (error) {
+        console.error("Sign up failed:", error);
+        toast.error("Sign up failed. Please try again.");
+      }
     }
   };
 

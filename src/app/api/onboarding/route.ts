@@ -1,64 +1,46 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { companyDetails, onboardingPreferences } from "@/lib/schema";
-import { InferModel } from "drizzle-orm";
+import { createClient } from '@supabase/supabase-js'
 
-type NewCompanyDetails = InferModel<typeof companyDetails, "insert">;
-type NewOnboardingPreferences = InferModel<
-  typeof onboardingPreferences,
-  "insert"
->;
+// Initialize Supabase client with anon key
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Missing Supabase environment variables');
+  throw new Error('Missing Supabase environment variables')
+}
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 export async function POST(req: Request) {
   try {
-    const {
-      employerId,
-      companyName,
-      companyType,
-      website,
-      countryId,
-      countyId,
-      companySize,
-      employeeCount,
-      needAssistance,
-    } = await req.json();
+    const body = await req.json()
+    console.log("Received onboarding data:", body);
 
-    // Insert company details
-    const newCompanyDetails: NewCompanyDetails = {
-      id: 0, // This will be ignored by the database and auto-generated
-      employerId: Number(employerId),
-      companyName,
-      companyType,
-      website,
-      countryId: Number(countryId),
-      countyId: countyId ? Number(countyId) : null,
-      companySize,
-    };
+    // Validate required fields
+    if (!body.employerId || !body.companyName || !body.companyType || !body.countryId) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    }
 
-    await db.insert(companyDetails).values(newCompanyDetails).execute();
+    // Insert data into companydetails table
+    const { data, error } = await supabase
+      .from('companydetails')
+      .insert({
+        employer_id: body.employerId,
+        company_name: body.companyName,
+        company_type: body.companyType,
+        website: body.website,
+        country_id: body.countryId,
+        county_id: body.countyId,
+        company_size: body.companySize,
+      })
+      .select()
 
-    // Insert onboarding preferences
-    const newOnboardingPreferences: NewOnboardingPreferences = {
-      id: 0, // This will be ignored by the database and auto-generated
-      employerId: Number(employerId),
-      employeeCount: Number(employeeCount),
-      needAssistance: Boolean(needAssistance),
-    };
+    if (error) throw error
 
-    await db
-      .insert(onboardingPreferences)
-      .values(newOnboardingPreferences)
-      .execute();
-
-    return NextResponse.json(
-      { message: "Onboarding data saved successfully" },
-      { status: 200 },
-    );
+    return NextResponse.json({ success: true, data }, { status: 200 })
   } catch (error) {
-    console.error("Error in onboarding:", error);
-    return NextResponse.json(
-      { error: "An error occurred during onboarding" },
-      { status: 500 },
-    );
+    console.error('Error in onboarding:', error)
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }

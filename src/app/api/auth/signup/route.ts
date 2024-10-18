@@ -1,50 +1,38 @@
-import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabaseClient";
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
+import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
+  const formData = await request.json();
+  const supabase = createRouteHandlerClient({ cookies });
+
   try {
-    const { firstName, lastName, email, password } = await request.json();
-
-    // Validate the input
-    if (!firstName || !lastName || !email || !password) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
-    }
-
-    // Sign up the user using Supabase
     const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
+      email: formData.email,
+      password: formData.password,
       options: {
         data: {
-          first_name: firstName,
-          last_name: lastName,
-        }
-      }
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+        },
+      },
     });
 
-    if (error) throw error;
-
-    if (data.user) {
-      const userData = {
-        id: data.user.id,
-        email: data.user.email,
-        firstName: data.user.user_metadata.first_name,
-        lastName: data.user.user_metadata.last_name,
-      };
-
-      console.log("Sending response:", userData);
-      return NextResponse.json(userData);
-    } else {
-      throw new Error("User creation failed");
+    if (error) {
+      if (error.message.includes('Password should be at least 6 characters')) {
+        return NextResponse.json({ error: 'Password should be at least 6 characters long.' }, { status: 400 });
+      }
+      throw error;
     }
+
+    return NextResponse.json({
+      id: data.user?.id,
+      email: data.user?.email,
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+    });
   } catch (error) {
     console.error('Signup error:', error);
-    if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-    return NextResponse.json({ error: "An unknown error occurred" }, { status: 500 });
+    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
   }
 }

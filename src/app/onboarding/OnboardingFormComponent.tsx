@@ -62,6 +62,7 @@ interface FormData {
   companySize: string;
   employeeCount: string;
   needAssistance: boolean;
+  employerId: number;
 }
 
 function ErrorFallback({error}: {error: Error}) {
@@ -87,6 +88,7 @@ export default function OnboardingFormComponent() {
     companySize: "",
     employeeCount: "",
     needAssistance: false,
+    employerId: 0,
   });
   const router = useRouter();
 
@@ -180,7 +182,7 @@ export default function OnboardingFormComponent() {
       return;
     }
 
-    const employerId = localStorage.getItem("employerId");
+    const employerId = formData.employerId;
     if (!employerId) {
       console.log("Employer ID not found, redirecting to signup");
       toast.error("Employer ID not found. Please sign up again.");
@@ -193,18 +195,7 @@ export default function OnboardingFormComponent() {
       const response = await fetch("/api/onboarding", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          employerId: parseInt(employerId),
-          phoneNumber: formData.phoneNumber,
-          companyName: formData.companyName,
-          companyType: formData.companyType,
-          website: formData.website,
-          countryId: formData.countryId,
-          countyId: formData.countyId,
-          companySize: formData.companySize,
-          employeeCount: parseInt(formData.employeeCount),
-          needAssistance: formData.needAssistance,
-        }),
+        body: JSON.stringify(formData),
       });
 
       console.log("Onboarding API response status:", response.status);
@@ -243,6 +234,11 @@ export default function OnboardingFormComponent() {
     if (!formData.companyName) {
       console.log("Validation failed: Company name is required");
       toast.error("Company name is required");
+      return false;
+    }
+    if (!formData.companyType) {
+      console.log("Validation failed: Company type is required");
+      toast.error("Company type is required");
       return false;
     }
     // Add more validations as needed
@@ -447,8 +443,9 @@ export default function OnboardingFormComponent() {
       router.push("/signup");
     } else {
       console.log("EmployerId found in localStorage:", employerId);
+      setFormData(prevData => ({ ...prevData, employerId: parseInt(employerId) }));
     }
-  }, []);
+  }, [router]); // Add router to the dependency array
 
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
@@ -477,10 +474,14 @@ export default function OnboardingFormComponent() {
               <Button
                 onClick={() => {
                   console.log("Button clicked, currentStep:", currentStep);
-                  currentStep === steps.length - 1 ? handleSubmit() : handleNext();
+                  if (currentStep === steps.length - 1) {
+                    handleSubmit();
+                  } else {
+                    handleNext();
+                  }
                 }}
               >
-                {currentStep === steps.length - 1 ? "Complete" : "Next"}
+                {currentStep === steps.length - 1 ? "Submit" : "Next"}
               </Button>
             </CardFooter>
           </Card>

@@ -3,6 +3,9 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import SignUpFormComponent from "./SignUpFormComponent";
+import { checkPasswordStrength } from '@/utils/passwordStrength';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface SignUpFormData {
   email: string;
@@ -23,6 +26,18 @@ export default function SignupPage() {
 
   const handleSignup = async (formData: SignUpFormData): Promise<UserData> => {
     try {
+      const passwordStrength = checkPasswordStrength(formData.password);
+      
+      if (formData.password.length < 6) {
+        toast.error("Password must be at least 6 characters long.");
+        throw new Error("Password too short");
+      }
+      
+      if (passwordStrength === 'weak') {
+        toast.error("Please choose a stronger password.");
+        throw new Error("Password too weak");
+      }
+
       console.log("Attempting signup with data:", formData);
       const response = await fetch("/api/auth/signup", {
         method: "POST",
@@ -35,7 +50,8 @@ export default function SignupPage() {
       console.log("Signup response status:", response.status);
 
       if (!response.ok) {
-        throw new Error("Signup failed");
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Signup failed");
       }
 
       const userData: UserData = await response.json();
@@ -50,6 +66,9 @@ export default function SignupPage() {
       localStorage.setItem('employerId', userData.id);
       console.log("Stored employerId in localStorage:", userData.id);
 
+      // Show success message
+      toast.success("Signup successful!");
+
       // Redirect to the onboarding page
       console.log("Attempting to redirect to /onboarding");
       router.push('/onboarding');
@@ -57,6 +76,11 @@ export default function SignupPage() {
       return userData;
     } catch (error) {
       console.error("Signup error:", error);
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("An unexpected error occurred. Please try again.");
+      }
       throw error;
     }
   };

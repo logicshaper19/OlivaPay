@@ -20,6 +20,7 @@
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-switch": "^1.1.1",
     "@radix-ui/react-tabs": "^1.1.1",
+    "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/supabase-js": "^2.45.4",
     "bcrypt": "^5.1.1",
     "class-variance-authority": "^0.7.0",
@@ -35,6 +36,7 @@
     "react-dom": "^18",
     "react-error-boundary": "^4.1.1",
     "react-hot-toast": "^2.4.1",
+    "react-toastify": "^10.0.6",
     "recharts": "^2.13.0",
     "tailwind-merge": "^2.5.3",
     "tailwindcss-animate": "^1.0.7"
