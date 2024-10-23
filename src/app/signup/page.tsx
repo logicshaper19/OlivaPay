@@ -24,7 +24,7 @@ interface UserData {
 export default function SignupPage() {
   const router = useRouter();
 
-  const handleSignup = async (formData: SignUpFormData): Promise<UserData> => {
+  const handleSignup = async (formData: SignUpFormData): Promise<UserData | undefined> => {
     try {
       const passwordStrength = checkPasswordStrength(formData.password);
       
@@ -51,7 +51,12 @@ export default function SignupPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Signup failed");
+        if (errorData.error === 'Email address cannot be used as it is not authorized') {
+          toast.error("This email address is not authorized for signup. Please use a different email or contact support.");
+        } else {
+          throw new Error(errorData.error || "Signup failed");
+        }
+        return undefined;
       }
 
       const userData: UserData = await response.json();
@@ -77,11 +82,15 @@ export default function SignupPage() {
     } catch (error) {
       console.error("Signup error:", error);
       if (error instanceof Error) {
-        toast.error(error.message);
+        if (error.message.includes('email_address_not_authorized')) {
+          toast.error("This email address is not authorized for signup. Please use a different email or contact support.");
+        } else {
+          toast.error(error.message);
+        }
       } else {
         toast.error("An unexpected error occurred. Please try again.");
       }
-      throw error;
+      return undefined;
     }
   };
 

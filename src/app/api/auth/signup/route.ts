@@ -1,38 +1,44 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+
+// Initialize Supabase client
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export async function POST(request: Request) {
-  const formData = await request.json();
-  const supabase = createRouteHandlerClient({ cookies });
-
   try {
+    const body = await request.json();
+    console.log("Received signup request with body:", body);
+
+    // Destructure the body to get the required fields
+    const { email, password, firstName, lastName } = body;
+
+    // Attempt to sign up the user with Supabase
     const { data, error } = await supabase.auth.signUp({
-      email: formData.email,
-      password: formData.password,
+      email,
+      password,
       options: {
         data: {
-          first_name: formData.firstName,
-          last_name: formData.lastName,
+          firstName,
+          lastName,
         },
       },
     });
 
     if (error) {
-      if (error.message.includes('Password should be at least 6 characters')) {
-        return NextResponse.json({ error: 'Password should be at least 6 characters long.' }, { status: 400 });
-      }
-      throw error;
+      console.error("Supabase signup error:", error);
+      return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
-    return NextResponse.json({
-      id: data.user?.id,
-      email: data.user?.email,
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-    });
+    if (data) {
+      console.log("Signup successful, user data:", data);
+      return NextResponse.json(data, { status: 200 });
+    }
+
   } catch (error) {
-    console.error('Signup error:', error);
-    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
+    console.error("Detailed error in signup API:", error);
+    return NextResponse.json({ error: "An unexpected error occurred", details: error }, { status: 500 });
   }
 }

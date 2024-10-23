@@ -30,7 +30,7 @@ interface UserData {
 }
 
 interface SignUpFormComponentProps {
-  onSubmit: (formData: SignUpFormData) => Promise<UserData>;
+  onSubmit: (formData: SignUpFormData) => Promise<UserData | undefined>;
 }
 
 const SignUpFormComponent: React.FC<SignUpFormComponentProps> = ({
@@ -69,12 +69,25 @@ const SignUpFormComponent: React.FC<SignUpFormComponentProps> = ({
     if (validateForm()) {
       try {
         const userData = await onSubmit(formData);
-        console.log("User signed up successfully:", userData);
-        toast.success("Sign up successful!");
-        router.push('/onboarding'); // Redirect to onboarding page after successful signup
+        if (userData) {
+          console.log("User signed up successfully:", userData);
+          toast.success("Sign up successful!");
+          router.push('/onboarding'); // Redirect to onboarding page after successful signup
+        } else {
+          console.log("Signup failed without throwing an error");
+          toast.error("Sign up failed. Please try again.");
+        }
       } catch (error) {
-        console.error("Sign up failed:", error);
-        toast.error("Sign up failed. Please try again.");
+        console.error("Error during signup:", error);
+        if (error instanceof Error) {
+          if (error.message.includes('Email address cannot be used as it is not authorized')) {
+            toast.error("This email address is not authorized for signup. Please use a different email or contact support.");
+          } else {
+            toast.error(error.message);
+          }
+        } else {
+          toast.error("An unexpected error occurred. Please try again.");
+        }
       }
     }
   };
